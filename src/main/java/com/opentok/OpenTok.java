@@ -10,7 +10,6 @@ package com.opentok;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -239,7 +238,7 @@ public class OpenTok {
      * session. You will use this session ID in the client SDKs to identify the session.
      */
     public Session createSession(SessionProperties properties) throws OpenTokException {
-        Map<String, Collection<String>> params;
+        Map<String, List<String>> params;
         String xpathQuery = "/sessions/Session/session_id";
 
         // NOTE: doing this null check twice is kind of ugly
@@ -404,7 +403,7 @@ public class OpenTok {
         }
     }
 
-	public Archive startArchive(String sessionId) throws OpenTokException {
+    public Archive startArchive(String sessionId) throws OpenTokException {
         return startArchive(sessionId, new ArchiveProperties.Builder().build());
     }
 
