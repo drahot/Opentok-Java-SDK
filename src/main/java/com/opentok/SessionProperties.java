@@ -11,7 +11,7 @@ import com.opentok.exception.InvalidArgumentException;
 import org.apache.commons.validator.routines.InetAddressValidator;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -161,8 +161,8 @@ public class SessionProperties {
     /**
      * Returns the session properties as a Map.
      */
-    public Map<String, Collection<String>> toMap() {
-        Map<String, Collection<String>> params = new HashMap<String, Collection<String>>();
+    public Map<String, List<String>> toMap() {
+        Map<String, List<String>> params = new HashMap<String, List<String>>();
         if (null != location) {
             ArrayList<String> valueList = new ArrayList<String>();
             valueList.add(location);
