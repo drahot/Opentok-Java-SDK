@@ -8,7 +8,7 @@
 package com.opentok.util;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -37,22 +37,14 @@ public class HttpClient extends AsyncHttpClient {
         this.apiUrl = builder.apiUrl;
     }
 
-    public String createSession(Map<String, Collection<String>> params) throws RequestException {
-        Future<Response> request = null;
+    public String createSession(Map<String, List<String>> params) throws RequestException {
+        Future<Response> request = this.preparePost(this.apiUrl + "/session/create")
+                                 .setFormParams(params)
+                                 .execute();
+
         String responseString = null;
-        Response response = null;
-        FluentStringsMap paramsString = new FluentStringsMap().addAll(params);
-
         try {
-            request = this.preparePost(this.apiUrl + "/session/create")
-                    .setParameters(paramsString)
-                    .execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not create an OpenTok Session", e);
-        }
-
-        try {
-            response = request.get();
+            Response response = request.get();
             switch (response.getStatusCode()) {
                 case 200:
                     responseString = response.getResponseBody();
@@ -74,16 +66,10 @@ public class HttpClient extends AsyncHttpClient {
     }
 
     public String getArchive(String archiveId) throws RequestException {
-        String responseString = null;
-        Future<Response> request = null;
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId;
+        Future<Response> request = this.prepareGet(url).execute();
 
-        try {
-            request = this.prepareGet(url).execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not get an OpenTok Archive", e);
-        }
-
+        String responseString = null;
         try {
             Response response = request.get();
             switch (response.getStatusCode()) {
@@ -115,26 +101,24 @@ public class HttpClient extends AsyncHttpClient {
     }
 
     public String getArchives(int offset, int count) throws RequestException {
-        String responseString = null;
-        Future<Response> request = null;
-        // TODO: maybe use a StringBuilder?
-        String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive";
+        StringBuilder sb = new StringBuilder();
+        sb.append(this.apiUrl).append("/v2/partner/").append(this.apiKey).append("/archive");
         if (offset != 0 || count != 1000) {
-            url += "?";
+            sb.append("?");
             if (offset != 0) {
-                url += ("offset=" + Integer.toString(offset) + '&');
+                sb.append("offset=").append(Integer.toString(offset));
             }
             if (count != 1000) {
-                url += ("count=" + Integer.toString(count));
+                if (offset != 0) {
+                    sb.append('&');
+                }
+                sb.append("count=").append(Integer.toString(count));
             }
         }
+        String url = sb.toString();
+        Future<Response> request = this.prepareGet(url).execute();
 
-        try {
-            request = this.prepareGet(url).execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not get OpenTok Archives", e);
-        }
-
+        String responseString = null;
         try {
             Response response = request.get();
             switch (response.getStatusCode()) {
@@ -164,9 +148,6 @@ public class HttpClient extends AsyncHttpClient {
 
     public String startArchive(String sessionId, ArchiveProperties properties)
             throws OpenTokException {
-        String responseString = null;
-        Future<Response> request = null;
-        String requestBody = null;
         // TODO: maybe use a StringBuilder?
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive";
 
@@ -180,20 +161,19 @@ public class HttpClient extends AsyncHttpClient {
         if (properties.name() != null) {
             requestJson.put("name", properties.name());
         }
+
+        String requestBody = null;
         try {
             requestBody = new ObjectMapper().writeValueAsString(requestJson);
         } catch (JsonProcessingException e) {
             throw new OpenTokException("Could not start an OpenTok Archive. The JSON body encoding failed.", e);
         }
-        try {
-            request = this.preparePost(url)
-                    .setBody(requestBody)
-                    .setHeader("Content-Type", "application/json")
-                    .execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not start an OpenTok Archive.", e);
-        }
+        Future<Response> request = this.preparePost(url)
+                                 .setBody(requestBody)
+                                 .setHeader("Content-Type", "application/json")
+                                 .execute();
 
+        String responseString = null;
         try {
             Response response = request.get();
             switch (response.getStatusCode()) {
@@ -227,17 +207,11 @@ public class HttpClient extends AsyncHttpClient {
     }
 
     public String stopArchive(String archiveId) throws RequestException {
-        String responseString = null;
-        Future<Response> request = null;
         // TODO: maybe use a StringBuilder?
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId + "/stop";
+        Future<Response> request = this.preparePost(url).execute();
 
-        try {
-            request = this.preparePost(url).execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not stop an OpenTok Archive. archiveId = " + archiveId, e);
-        }
-
+        String responseString = null;
         try {
             Response response = request.get();
             switch (response.getStatusCode()) {
@@ -275,16 +249,10 @@ public class HttpClient extends AsyncHttpClient {
     }
 
     public String deleteArchive(String archiveId) throws RequestException {
-        String responseString = null;
-        Future<Response> request = null;
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId;
+        Future<Response> request = this.prepareDelete(url).execute();
 
-        try {
-            request = this.prepareDelete(url).execute();
-        } catch (IOException e) {
-            throw new RequestException("Could not delete an OpenTok Archive. archiveId = " + archiveId, e);
-        }
-
+        String responseString = null;
         try {
             Response response = request.get();
             switch (response.getStatusCode()) {
