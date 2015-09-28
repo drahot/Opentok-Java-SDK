@@ -49,7 +49,7 @@ public class HttpClient extends AsyncHttpClient {
             if (response.getStatusCode() == 200) {
                 responseString = response.getResponseBody();
             } else {
-                checkResponse(response, "Could not create an OpenTok Session.");
+                handleError(response, "Could not create an OpenTok Session.");
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -75,7 +75,7 @@ public class HttpClient extends AsyncHttpClient {
             } else {
                 Map<Integer, String> errorMessages = new HashMap<Integer, String>();
                 errorMessages.put(400, " The archiveId was invalid. archiveId: " + archiveId);
-                checkResponse(response, "Could not get an OpenTok Archive.", errorMessages);
+                handleError(response, "Could not get an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -114,7 +114,7 @@ public class HttpClient extends AsyncHttpClient {
             if (response.getStatusCode() == 200) {
                 responseString = response.getResponseBody();
             } else {
-                checkResponse(response, "Could not get OpenTok Archives.");
+                handleError(response, "Could not get OpenTok Archives.");
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -165,7 +165,7 @@ public class HttpClient extends AsyncHttpClient {
                 Map<Integer, String> errorMessages = new HashMap<Integer, String>();
                 errorMessages.put(404, " The sessionId does not exist. sessionId = " + sessionId);
                 errorMessages.put(409, " The session is either peer-to-peer or already recording. sessionId = " + sessionId);
-                checkResponse(response, "Could not start an OpenTok Archive.", errorMessages);
+                handleError(response, "Could not start an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -193,7 +193,7 @@ public class HttpClient extends AsyncHttpClient {
                 Map<Integer, String> errorMessages = new HashMap<Integer, String>();
                 errorMessages.put(404, " The archiveId does not exist. archiveId = " + archiveId);
                 errorMessages.put(409, " The archive is not being recorded. archiveId = " + archiveId);
-                checkResponse(response, "Could not stop an OpenTok Archive.", errorMessages);
+                handleError(response, "Could not stop an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -220,7 +220,7 @@ public class HttpClient extends AsyncHttpClient {
                 Map<Integer, String> errorMessages = new HashMap<Integer, String>();
                 errorMessages.put(409, " The status was not \"uploaded\", \"available\"," +
                                 " or \"deleted\". archiveId = " + archiveId);
-                checkResponse(response, "Could not delete an OpenTok Archive.", errorMessages);
+                handleError(response, "Could not delete an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -235,11 +235,11 @@ public class HttpClient extends AsyncHttpClient {
         return responseString;
     }
 
-    private void checkResponse(Response response, String message) throws RequestException {
-        checkResponse(response, message, null);
+    private void handleError(Response response, String message) throws RequestException {
+        handleError(response, message, null);
     }
 
-    private void checkResponse(Response response, String message, Map<Integer, String> errorMessages) 
+    private void handleError(Response response, String message, Map<Integer, String> errorMessages) 
             throws RequestException {
         int statusCode = response.getStatusCode();
         if (errorMessages != null && errorMessages.containsKey(statusCode)) {
