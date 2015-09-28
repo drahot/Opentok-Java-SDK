@@ -8,6 +8,7 @@
 package com.opentok.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -45,13 +46,10 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 200:
-                    responseString = response.getResponseBody();
-                    break;
-                default:
-                    throw new RequestException("Could not create an OpenTok Session. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                responseString = response.getResponseBody();
+            } else {
+                checkResponse(response, "Could not create an OpenTok Session.");
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -72,20 +70,12 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 200:
-                    responseString = response.getResponseBody();
-                    break;
-                case 400:
-                    throw new RequestException("Could not get an OpenTok Archive. The archiveId was invalid. " +
-                            "archiveId: " + archiveId);
-                case 403:
-                    throw new RequestException("Could not get an OpenTok Archive. The request was not authorized.");
-                case 500:
-                    throw new RequestException("Could not get an OpenTok Archive. A server error occurred.");
-                default:
-                    throw new RequestException("Could not get an OpenTok Archive. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                responseString = response.getResponseBody();
+            } else {
+                Map<Integer, String> errorMessages = new HashMap<Integer, String>();
+                errorMessages.put(400, " The archiveId was invalid. archiveId: " + archiveId);
+                checkResponse(response, "Could not get an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -121,17 +111,10 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 200:
-                    responseString = response.getResponseBody();
-                    break;
-                case 403:
-                    throw new RequestException("Could not get OpenTok Archives. The request was not authorized.");
-                case 500:
-                    throw new RequestException("Could not get OpenTok Archives. A server error occurred.");
-                default:
-                    throw new RequestException("Could not get an OpenTok Archive. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                responseString = response.getResponseBody();
+            } else {
+                checkResponse(response, "Could not get OpenTok Archives.");
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -176,23 +159,13 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 200:
-                    responseString = response.getResponseBody();
-                    break;
-                case 403:
-                    throw new RequestException("Could not start an OpenTok Archive. The request was not authorized.");
-                case 404:
-                    throw new RequestException("Could not start an OpenTok Archive. The sessionId does not exist. " +
-                            "sessionId = " + sessionId);
-                case 409:
-                    throw new RequestException("Could not start an OpenTok Archive. The session is either " +
-                            "peer-to-peer or already recording. sessionId = " + sessionId);
-                case 500:
-                    throw new RequestException("Could not start an OpenTok Archive. A server error occurred.");
-                default:
-                    throw new RequestException("Could not start an OpenTok Archive. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                responseString = response.getResponseBody();
+            } else {
+                Map<Integer, String> errorMessages = new HashMap<Integer, String>();
+                errorMessages.put(404, " The sessionId does not exist. sessionId = " + sessionId);
+                errorMessages.put(409, " The session is either peer-to-peer or already recording. sessionId = " + sessionId);
+                checkResponse(response, "Could not start an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -214,27 +187,13 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 200:
-                    responseString = response.getResponseBody();
-                    break;
-                case 400:
-                    // NOTE: the REST api spec talks about sessionId and action, both of which aren't required.
-                    //       see: https://github.com/opentok/OpenTok-2.0-archiving-samples/blob/master/REST-API.md#stop_archive
-                    throw new RequestException("Could not stop an OpenTok Archive.");
-                case 403:
-                    throw new RequestException("Could not stop an OpenTok Archive. The request was not authorized.");
-                case 404:
-                    throw new RequestException("Could not stop an OpenTok Archive. The archiveId does not exist. " +
-                            "archiveId = " + archiveId);
-                case 409:
-                    throw new RequestException("Could not stop an OpenTok Archive. The archive is not being recorded. " +
-                            "archiveId = " + archiveId);
-                case 500:
-                    throw new RequestException("Could not stop an OpenTok Archive. A server error occurred.");
-                default:
-                    throw new RequestException("Could not stop an OpenTok Archive. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 200) {
+                responseString = response.getResponseBody();
+            } else {
+                Map<Integer, String> errorMessages = new HashMap<Integer, String>();
+                errorMessages.put(404, " The archiveId does not exist. archiveId = " + archiveId);
+                errorMessages.put(409, " The archive is not being recorded. archiveId = " + archiveId);
+                checkResponse(response, "Could not stop an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -255,20 +214,13 @@ public class HttpClient extends AsyncHttpClient {
         String responseString = null;
         try {
             Response response = request.get();
-            switch (response.getStatusCode()) {
-                case 204:
-                    responseString = response.getResponseBody();
-                    break;
-                case 403:
-                    throw new RequestException("Could not delete an OpenTok Archive. The request was not authorized.");
-                case 409:
-                    throw new RequestException("Could not delete an OpenTok Archive. The status was not \"uploaded\"," +
-                            " \"available\", or \"deleted\". archiveId = " + archiveId);
-                case 500:
-                    throw new RequestException("Could not delete an OpenTok Archive. A server error occurred.");
-                default:
-                    throw new RequestException("Could not get an OpenTok Archive. The server response was invalid." +
-                            " response code: " + response.getStatusCode());
+            if (response.getStatusCode() == 204) {
+                responseString = response.getResponseBody();
+            } else {
+                Map<Integer, String> errorMessages = new HashMap<Integer, String>();
+                errorMessages.put(409, " The status was not \"uploaded\", \"available\"," +
+                                " or \"deleted\". archiveId = " + archiveId);
+                checkResponse(response, "Could not delete an OpenTok Archive.", errorMessages);
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
@@ -281,6 +233,30 @@ public class HttpClient extends AsyncHttpClient {
         }
 
         return responseString;
+    }
+
+    private void checkResponse(Response response, String message) throws RequestException {
+        checkResponse(response, message, null);
+    }
+
+    private void checkResponse(Response response, String message, Map<Integer, String> errorMessages) 
+            throws RequestException {
+        int statusCode = response.getStatusCode();
+        if (errorMessages != null && errorMessages.containsKey(statusCode)) {
+            throw new RequestException(message + errorMessages.get(statusCode));
+        }
+
+        switch (statusCode) {
+            case 400:
+                throw new RequestException(message);
+            case 403:
+                throw new RequestException(message + " The request was not authorized.");
+            case 500:
+                throw new RequestException(message + " A server error occurred.");
+            default:
+                throw new RequestException(message + " The server response was invalid." +
+                        " response code: " + response.getStatusCode());
+        }
     }
 
     public static class Builder {
