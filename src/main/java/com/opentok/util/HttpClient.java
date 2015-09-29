@@ -55,7 +55,7 @@ public class HttpClient extends AsyncHttpClient {
         };
 
         BoundRequestBuilder builder = this.preparePost(this.apiUrl + "/session/create")
-                .setFormParams(params);
+                                    .setFormParams(params);
 
         return request(builder, handler, message);
     }
