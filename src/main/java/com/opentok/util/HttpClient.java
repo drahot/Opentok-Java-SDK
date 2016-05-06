@@ -7,26 +7,24 @@
  */
 package com.opentok.util;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.ning.http.client.*;
-import com.ning.http.client.filter.FilterContext;
-import com.ning.http.client.filter.FilterException;
-import com.ning.http.client.filter.RequestFilter;
 import com.opentok.ArchiveProperties;
 import com.opentok.constants.Version;
 import com.opentok.exception.OpenTokException;
 import com.opentok.exception.RequestException;
+import org.asynchttpclient.*;
+import org.asynchttpclient.filter.FilterContext;
+import org.asynchttpclient.filter.FilterException;
+import org.asynchttpclient.filter.RequestFilter;
 
-public class HttpClient extends AsyncHttpClient {
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+public class HttpClient extends DefaultAsyncHttpClient {
     
     private final String apiUrl;
     private final int apiKey;
@@ -38,10 +36,12 @@ public class HttpClient extends AsyncHttpClient {
     }
 
     public String createSession(Map<String, Collection<String>> params) throws RequestException {
-        String responseString = null;
-        Response response = null;
-        FluentStringsMap paramsString = new FluentStringsMap().addAll(params);
-
+        String responseString;
+        Response response;
+        Map<String, List<String>> paramsString = new HashMap<>();
+        for (Map.Entry<String, Collection<String>> entry: params.entrySet()) {
+            paramsString.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
         Future<Response> request = this.preparePost(this.apiUrl + "/session/create")
                 .setFormParams(paramsString)
                 .execute();
@@ -58,18 +58,14 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
-            throw new RequestException("Could not create an OpenTok Session", e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not create an OpenTok Session", e);
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not create an OpenTok Session", e);
         }
         return responseString;
     }
 
     public String getArchive(String archiveId) throws RequestException {
-        String responseString = null;
+        String responseString;
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId;
         Future<Response> request = this.prepareGet(url).execute();
 
@@ -92,19 +88,15 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not get an OpenTok Archive", e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not get an OpenTok Archive", e);
-        } catch (IOException e) {
-            throw new RequestException("Could not  get an OpenTok Archive", e);
         }
 
         return responseString;
     }
 
     public String getArchives(int offset, int count) throws RequestException {
-        String responseString = null;
+        String responseString;
         // TODO: maybe use a StringBuilder?
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive";
         if (offset != 0 || count != 1000) {
@@ -135,11 +127,7 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
-            throw new RequestException("Could not get OpenTok Archives", e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not get OpenTok Archives", e);
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not get OpenTok Archives", e);
         }
 
@@ -148,8 +136,8 @@ public class HttpClient extends AsyncHttpClient {
 
     public String startArchive(String sessionId, ArchiveProperties properties)
             throws OpenTokException {
-        String responseString = null;
-        String requestBody = null;
+        String responseString;
+        String requestBody;
         // TODO: maybe use a StringBuilder?
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive";
 
@@ -195,18 +183,14 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
-            throw new RequestException("Could not start an OpenTok Archive.", e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not start an OpenTok Archive.", e);
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not start an OpenTok Archive.", e);
         }
         return responseString;
     }
 
     public String stopArchive(String archiveId) throws RequestException {
-        String responseString = null;
+        String responseString;
         // TODO: maybe use a StringBuilder?
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId + "/stop";
         Future<Response> request = this.preparePost(url).execute();
@@ -237,18 +221,14 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
-            throw new RequestException("Could not stop an OpenTok Archive.", e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not stop an OpenTok Archive.", e);
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not stop an OpenTok Archive.", e);
         }
         return responseString;
     }
 
     public String deleteArchive(String archiveId) throws RequestException {
-        String responseString = null;
+        String responseString;
         String url = this.apiUrl + "/v2/partner/" + this.apiKey + "/archive/" + archiveId;
         Future<Response> request = this.prepareDelete(url).execute();
 
@@ -271,11 +251,7 @@ public class HttpClient extends AsyncHttpClient {
             }
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (InterruptedException e) {
-            throw new RequestException("Could not delete an OpenTok Archive. archiveId = " + archiveId, e);
-        } catch (ExecutionException e) {
-            throw new RequestException("Could not delete an OpenTok Archive. archiveId = " + archiveId, e);
-        } catch (IOException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RequestException("Could not delete an OpenTok Archive. archiveId = " + archiveId, e);
         }
 
@@ -299,13 +275,12 @@ public class HttpClient extends AsyncHttpClient {
         }
 
         public HttpClient build() {
-            this.config = new AsyncHttpClientConfig.Builder()
+            this.config = new DefaultAsyncHttpClientConfig.Builder()
                     .setUserAgent("Opentok-Java-SDK/" + Version.VERSION + " JRE/" + System.getProperty("java.version"))
                     .addRequestFilter(new PartnerAuthRequestFilter(this.apiKey, this.apiSecret))
                     .build();
             // NOTE: not thread-safe, config could be modified by another thread here?
-            HttpClient client = new HttpClient(this);
-            return client;
+            return new HttpClient(this);
         }
     }
 
