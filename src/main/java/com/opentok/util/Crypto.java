@@ -46,6 +46,6 @@ public class Crypto {
         sessionId = sessionId.replaceAll("-", "+").replaceAll("_", "/");
         byte[] buffer = Base64.decodeBase64(sessionId);
         sessionId = new String(buffer, "UTF-8");
-        return new ArrayList<String>(Arrays.asList(sessionId.split("~")));
+        return new ArrayList<>(Arrays.asList(sessionId.split("~")));
     }
 }

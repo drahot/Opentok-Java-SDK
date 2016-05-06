@@ -7,29 +7,25 @@
  */
 package com.opentok;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.opentok.exception.InvalidArgumentException;
+import com.opentok.exception.OpenTokException;
+import com.opentok.exception.RequestException;
+import com.opentok.util.Crypto;
+import com.opentok.util.HttpClient;
+import org.xml.sax.InputSource;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.opentok.exception.OpenTokException;
-import com.opentok.exception.InvalidArgumentException;
-import com.opentok.exception.RequestException;
-import com.opentok.util.Crypto;
-import com.opentok.util.HttpClient;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import org.xml.sax.InputSource;
+import java.util.Objects;
 
 /**
 * Contains methods for creating OpenTok sessions, generating tokens, and working with archives.
@@ -47,9 +43,9 @@ public class OpenTok {
     private String apiSecret;
     protected HttpClient client;
     static protected ObjectReader archiveReader = new ObjectMapper()
-            .reader(Archive.class);
+            .readerFor(Archive.class);
     static protected ObjectReader archiveListReader = new ObjectMapper()
-            .reader(ArchiveList.class);
+            .readerFor(ArchiveList.class);
 
     /**
      * Creates an OpenTok object.
@@ -122,8 +118,8 @@ public class OpenTok {
      * @return The token string.
      */
     public String generateToken(String sessionId, TokenOptions tokenOptions) throws OpenTokException {
-        List<String> sessionIdParts = null;
-        if(sessionId == null || sessionId == "") {
+        List<String> sessionIdParts;
+        if(sessionId == null || Objects.equals(sessionId, "")) {
             throw new InvalidArgumentException("Session not valid");
         }
 
@@ -358,12 +354,6 @@ public class OpenTok {
             return archiveListReader.readValue(archives);
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (JsonMappingException e) {
-            throw new RequestException("Exception mapping json: " + e.getMessage());
-        } catch (JsonParseException e) {
-            throw new RequestException("Exception mapping json: " + e.getMessage());
-        } catch (JsonProcessingException e) {
-            throw new RequestException("Exception mapping json: " + e.getMessage());
         } catch (IOException e) {
             throw new RequestException("Exception mapping json: " + e.getMessage());
         }
@@ -392,7 +382,7 @@ public class OpenTok {
      * @return The Archive object. This object includes properties defining the archive, including the archive ID.
      */
     public Archive startArchive(String sessionId, ArchiveProperties properties) throws OpenTokException {
-        if (sessionId == null || sessionId == "") {
+        if (sessionId == null || Objects.equals(sessionId, "")) {
             throw new InvalidArgumentException("Session not valid");
         }
         // TODO: do validation on sessionId and name
@@ -404,7 +394,8 @@ public class OpenTok {
         }
     }
 
-	public Archive startArchive(String sessionId) throws OpenTokException {
+	@SuppressWarnings("unused")
+    public Archive startArchive(String sessionId) throws OpenTokException {
         return startArchive(sessionId, new ArchiveProperties.Builder().build());
     }
 

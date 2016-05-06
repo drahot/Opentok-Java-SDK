@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
 * Represents an archive of an OpenTok session. 
 */
+@SuppressWarnings("unused")
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Archive {
     /**

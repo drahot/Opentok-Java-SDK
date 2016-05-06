@@ -15,6 +15,7 @@ import java.util.List;
 /**
  * Represents an list of archives of OpenTok session(s).
  */
+@SuppressWarnings("unused")
 @JsonFormat(shape= JsonFormat.Shape.OBJECT)
 public class ArchiveList extends ArrayList<Archive> {
 

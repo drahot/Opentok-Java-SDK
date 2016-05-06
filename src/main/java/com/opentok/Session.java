@@ -81,6 +81,7 @@ public class Session {
      *
      * @see #generateToken(TokenOptions tokenOptions)
      */
+    @SuppressWarnings("unused")
     public String generateToken() throws OpenTokException {
         // NOTE: maybe there should be a static object for the defaultTokenOptions?
         return this.generateToken(new TokenOptions.Builder().build());
@@ -117,7 +118,7 @@ public class Session {
         Role role = tokenOptions.getRole();
         double expireTime = tokenOptions.getExpireTime(); // will be 0 if nothing was explicitly set
         String data = tokenOptions.getData();             // will be null if nothing was explicitly set
-        Long create_time = new Long(System.currentTimeMillis() / 1000).longValue();
+        Long create_time = System.currentTimeMillis() / 1000;
 
         StringBuilder dataStringBuilder = new StringBuilder();
         Random random = new Random();
@@ -163,32 +164,23 @@ public class Session {
         try {
             tokenStringBuilder.append("T1==");
 
-            StringBuilder innerBuilder = new StringBuilder();
-            innerBuilder.append("partner_id=");
-            innerBuilder.append(this.apiKey);
-
-            innerBuilder.append("&sig=");
-
-            innerBuilder.append(Crypto.signData(dataStringBuilder.toString(), this.apiSecret));
-            innerBuilder.append(":");
-            innerBuilder.append(dataStringBuilder.toString());
+            String innerBuilder = "partner_id=" +
+                    this.apiKey +
+                    "&sig=" +
+                    Crypto.signData(dataStringBuilder.toString(), this.apiSecret) +
+                    ":" +
+                    dataStringBuilder.toString();
 
             tokenStringBuilder.append(
                     Base64.encodeBase64String(
-                            innerBuilder.toString().getBytes("UTF-8")
+                            innerBuilder.getBytes("UTF-8")
                     )
                     .replace("+", "-")
                     .replace("/", "_")
             );
 
         // if we only wanted Java 7 and above, we could DRY this into one catch clause
-        } catch (SignatureException e) {
-            throw new OpenTokException("Could not generate token, a signing error occurred.", e);
-        } catch (NoSuchAlgorithmException e) {
-            throw new OpenTokException("Could not generate token, a signing error occurred.", e);
-        } catch (InvalidKeyException e) {
-            throw new OpenTokException("Could not generate token, a signing error occurred.", e);
-        } catch (UnsupportedEncodingException e) {
+        } catch (SignatureException | NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException e) {
             throw new OpenTokException("Could not generate token, a signing error occurred.", e);
         }
 
