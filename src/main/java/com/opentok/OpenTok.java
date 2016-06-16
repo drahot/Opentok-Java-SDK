@@ -435,4 +435,13 @@ public class OpenTok {
     public void deleteArchive(String archiveId) throws OpenTokException {
         this.client.deleteArchive(archiveId);
     }
+
+    /**
+     * Close
+     */
+    @SuppressWarnings("unused")
+    public void close() {
+        this.client.close();
+    }
+
 }
